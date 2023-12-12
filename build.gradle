@@ -1,0 +1,145 @@
+buildscript {
+    def config = new Properties()
+    file('build.properties').withInputStream(config.&load)
+    project.ext.config = config
+
+    repositories {
+        mavenCentral()
+        google()
+        gradlePluginPortal()
+    }
+
+    dependencies {
+        classpath group: 'com.github.johnrengelman', name: 'shadow', version: config.shadow_version, changing: true
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'maven-publish'
+
+archivesBaseName = config.project_id
+group = config.project_group
+version = "${config.project_version}.${(System.getenv("CI_PIPELINE_IID") ?: 0)}"
+sourceCompatibility = config.java_version
+targetCompatibility = config.java_version
+
+repositories {
+    mavenCentral()
+    google()
+    maven { url = 'https://maven.covers1624.net' }
+    maven { url = 'https://repo1.maven.org/maven2' }
+}
+
+dependencies {
+    implementation group: 'org.jetbrains', name: 'annotations', version: config.annotations_version, changing: true
+    implementation group: 'it.unimi.dsi', name: 'fastutil', version: config.fastutil_version, changing: true
+    implementation group: 'org.fusesource.jansi', name: 'jansi', version: config.jansi_version, changing: true
+    implementation group: 'net.sf.jopt-simple', name: 'jopt-simple', version: config.jopt_version, changing: true
+    implementation group: 'org.antlr', name: 'antlr4-runtime', version: config.antlr_version, changing: true
+    implementation group: 'org.apiguardian', name: 'apiguardian-api', version: config.apiguard_version, changing: true
+
+    implementation group: 'io.karma.kommons', name: 'kommons', version: config.kommons_version, changing: true
+
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: config.junit_version, changing: true
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: config.junit_version, changing: true
+}
+
+test {
+    jvmArgs '-Xms256M'
+    jvmArgs '-Xmx512M'
+    useJUnitPlatform()
+}
+
+def commonManifest = {
+    attributes([
+            'Main-Class'            : "${config.project_group}.Main",
+            'Implementation-Title'  : 'Osmium',
+            'Implementation-Version': project.version,
+            'Implementation-Vendor' : 'Karma Krafts',
+            'Specification-Title'   : 'Osmium',
+            'Specification-Version' : 1,
+            'Specification-Vendor'  : 'Karma Krafts'
+    ])
+}
+
+jar {
+    archiveClassifier = 'slim'
+    manifest commonManifest
+}
+
+shadowJar {
+    archiveClassifier = ''
+    manifest commonManifest
+}
+
+artifacts {
+    archives jar
+    archives shadowJar
+}
+
+tasks.withType(Jar) {
+    includeEmptyDirs = false
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    sourceCompatibility = config.java_version
+    targetCompatibility = config.java_version
+}
+
+publishing {
+    repositories {
+        if (System.getenv('MAVEN_PASSWORD')) {
+            maven {
+                url "https://nexus.covers1624.net/repository/karmakrafts-releases/"
+
+                credentials {
+                    username 'kitsunealex'
+                    password System.getenv('MAVEN_PASSWORD')
+                }
+            }
+        }
+    }
+    publications {
+        manganese(MavenPublication) {
+            groupId config.artifact_group
+            artifactId project.archivesBaseName
+            version project.version
+
+            artifact jar
+            artifact shadowJar
+
+            pom {
+                name = archivesBaseName
+                description = archivesBaseName
+                //The publish plugin doesnt like GString's here apparently..
+                url = "https://git.karmakrafts.dev/kk/${config.project_id}".toString()
+
+                scm {
+                    url = "https://git.karmakrafts.dev/kk/${config.project_id}".toString()
+                }
+
+                issueManagement {
+                    system = 'gitlab'
+                    url = "https://git.karmakrafts.dev/kk/${config.project_id}/issues".toString()
+                }
+
+                licenses {
+                    license {
+                        name = "The MIT License"
+                        url = "https://git.karmakrafts.dev/kk/${config.project_id}/-/blob/master/LICENSE"
+                        distribution = 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'kitsunealex'
+                        name = 'KitsuneAlex'
+                    }
+                }
+            }
+        }
+    }
+}

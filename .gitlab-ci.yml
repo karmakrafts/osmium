@@ -1,0 +1,22 @@
+image: java:11-jdk
+stages:
+  - build
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+  - export JAVA_HOME=/usr/lib/jvm/zulu-21-amd64
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+build:
+  stage: build
+  script:
+    - ./gradlew build publish --info --no-daemon
+  artifacts:
+    paths:
+      - build/libs/*.jar
+    expire_in: 1 days
+  only:
+    - master
+  tags:
+    - linux
