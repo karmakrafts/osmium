@@ -40,6 +40,7 @@ dependencies {
     implementation group: 'org.apiguardian', name: 'apiguardian-api', version: config.apiguard_version, changing: true
 
     implementation group: 'io.karma.kommons', name: 'kommons', version: config.kommons_version, changing: true
+    implementation group: 'io.karma.ferrous', name: 'antlr-frontend', version: config.antlr_frontend_version
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: config.junit_version, changing: true
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: config.junit_version, changing: true
