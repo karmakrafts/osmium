@@ -15,8 +15,10 @@
 
 package io.karma.ferrous.osmium.grammar;
 
+import io.karma.ferrous.osmium.grammar.node.Node;
 import org.apiguardian.api.API;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,14 +29,32 @@ import java.util.List;
 @API(status = API.Status.INTERNAL)
 public abstract class AbstractGrammar implements Grammar {
     protected final String name;
+    protected final ArrayList<Node> nodes = new ArrayList<>();
 
     protected AbstractGrammar(final String name) {
         this.name = name;
     }
 
+    public void addNodes(final List<? extends Node> nodes) {
+        this.nodes.addAll(nodes);
+    }
+
+    public void addNode(final Node node) {
+        nodes.add(node);
+    }
+
+    public void removeNode(final Node node) {
+        nodes.remove(node);
+    }
+
     @Override
     public List<? extends Grammar> getImports() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<? extends Node> getNodes() {
+        return nodes;
     }
 
     @Override

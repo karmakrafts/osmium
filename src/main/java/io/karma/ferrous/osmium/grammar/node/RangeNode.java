@@ -13,24 +13,29 @@
  * limitations under the License.
  */
 
-package io.karma.ferrous.osmium.grammar;
+package io.karma.ferrous.osmium.grammar.node;
 
-import io.karma.ferrous.osmium.grammar.node.Node;
+import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
 import org.apiguardian.api.API;
-
-import java.util.List;
 
 /**
  * @author Alexander Hinze
- * @since 20/12/2023
+ * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public interface Grammar {
-    String getName();
+public final class RangeNode implements Node {
+    private final CharOpenHashSet chars;
 
-    GrammarType getType();
+    public RangeNode(final CharOpenHashSet chars) {
+        this.chars = chars;
+    }
 
-    List<? extends Grammar> getImports();
+    public CharOpenHashSet getChars() {
+        return chars;
+    }
 
-    List<? extends Node> getNodes();
+    @Override
+    public NodeType getType() {
+        return NodeType.RANGE;
+    }
 }

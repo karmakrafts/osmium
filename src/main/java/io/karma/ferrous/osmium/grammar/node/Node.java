@@ -13,24 +13,26 @@
  * limitations under the License.
  */
 
-package io.karma.ferrous.osmium.grammar;
+package io.karma.ferrous.osmium.grammar.node;
 
-import io.karma.ferrous.osmium.grammar.node.Node;
 import org.apiguardian.api.API;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Alexander Hinze
- * @since 20/12/2023
+ * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public interface Grammar {
-    String getName();
+public interface Node {
+    NodeType getType();
 
-    GrammarType getType();
+    default List<? extends Node> getChildren() {
+        return Collections.emptyList();
+    }
 
-    List<? extends Grammar> getImports();
-
-    List<? extends Node> getNodes();
+    default boolean isNamed() {
+        return false;
+    }
 }

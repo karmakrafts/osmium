@@ -13,24 +13,41 @@
  * limitations under the License.
  */
 
-package io.karma.ferrous.osmium.grammar;
+package io.karma.ferrous.osmium.grammar.node;
 
-import io.karma.ferrous.osmium.grammar.node.Node;
 import org.apiguardian.api.API;
 
-import java.util.List;
+import java.util.Collections;
 
 /**
  * @author Alexander Hinze
- * @since 20/12/2023
+ * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public interface Grammar {
-    String getName();
+public final class UnaryOpNode extends AbstractContainerNode<Node> {
+    private final Op op;
+    private final Node node;
 
-    GrammarType getType();
+    public UnaryOpNode(final Op op, final Node node) {
+        super(Collections.singletonList(node));
+        this.op = op;
+        this.node = node;
+    }
 
-    List<? extends Grammar> getImports();
+    public Op getOp() {
+        return op;
+    }
 
-    List<? extends Node> getNodes();
+    public Node getNode() {
+        return node;
+    }
+
+    @Override
+    public NodeType getType() {
+        return NodeType.UNARY_OP;
+    }
+
+    public enum Op {
+        ZERO_OR_MORE, ONE_OR_MORE, ZERO_OR_ONE, MATCH_UNTIL
+    }
 }

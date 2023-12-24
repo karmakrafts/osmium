@@ -17,6 +17,7 @@ package io.karma.ferrous.osmium;
 
 import io.karma.ferrous.antlr.ANTLRv4Lexer;
 import io.karma.ferrous.antlr.ANTLRv4Parser;
+import io.karma.ferrous.antlr.ANTLRv4Parser.GrammarSpecContext;
 import io.karma.ferrous.osmium.generator.Generator;
 import io.karma.ferrous.osmium.generator.PygmentsGenerator;
 import io.karma.ferrous.osmium.generator.TextMateGenerator;
@@ -49,6 +50,23 @@ public final class Transpiler {
         addGenerator(new PygmentsGenerator());
     }
 
+    public static @Nullable GrammarSpecContext loadGrammar(final Path path) {
+        try (final var stream = Files.newInputStream(path); final var channel = Channels.newChannel(stream)) {
+            final var charStream = CharStreams.fromChannel(channel, StandardCharsets.UTF_8);
+            final var lexer = new ANTLRv4Lexer(charStream);
+            final var tokenStream = new CommonTokenStream(lexer);
+            tokenStream.fill();
+            final var parser = new ANTLRv4Parser(tokenStream);
+            parser.removeErrorListeners();
+            parser.addErrorListener(DefaultErrorListener.INSTANCE);
+            return parser.grammarSpec();
+        }
+        catch (Throwable error) {
+            System.err.println(error.getMessage());
+            return null;
+        }
+    }
+
     public TranspilerConfig getConfig() {
         return config;
     }
@@ -78,20 +96,12 @@ public final class Transpiler {
     }
 
     public void transpile(final Path inPath, final Path outPath, final Generator generator) {
-        // @formatter:off
-        try (final var inStream = Files.newInputStream(inPath);
-             final var inChannel = Channels.newChannel(inStream);
-             final var outStream = Files.newOutputStream(outPath);
-             final var outChannel = Channels.newChannel(outStream)) {
-            // @formatter:on
-            final var charStream = CharStreams.fromChannel(inChannel, StandardCharsets.UTF_8);
-            final var lexer = new ANTLRv4Lexer(charStream);
-            final var tokenStream = new CommonTokenStream(lexer);
-            tokenStream.fill();
-            final var parser = new ANTLRv4Parser(tokenStream);
-            parser.removeErrorListeners();
-            parser.addErrorListener(DefaultErrorListener.INSTANCE);
-            final var grammar = ParserGrammarParser.parse(inPath.getParent(), parser.grammarSpec());
+        try (final var outStream = Files.newOutputStream(outPath); final var outChannel = Channels.newChannel(outStream)) {
+            final var grammarContext = loadGrammar(inPath);
+            if (grammarContext == null) {
+                throw new IllegalStateException(STR."Could not load grammar \{inPath}");
+            }
+            final var grammar = ParserGrammarParser.parse(inPath.getParent(), grammarContext);
             if (grammar == null) {
                 throw new IllegalStateException("Could not parse grammar");
             }

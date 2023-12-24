@@ -15,21 +15,17 @@
 
 package io.karma.ferrous.osmium.parser;
 
-import io.karma.ferrous.antlr.ANTLRv4Lexer;
 import io.karma.ferrous.antlr.ANTLRv4Parser;
 import io.karma.ferrous.antlr.ANTLRv4ParserListener;
+import io.karma.ferrous.osmium.Transpiler;
 import io.karma.ferrous.osmium.grammar.LexerGrammar;
-import io.karma.ferrous.osmium.util.DefaultErrorListener;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
+import io.karma.ferrous.osmium.grammar.node.UnaryOpNode;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apiguardian.api.API;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.channels.Channels;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -45,32 +41,32 @@ public abstract class ParseAdapter implements ANTLRv4ParserListener {
         this.parentDir = parentDir;
     }
 
+    protected static @Nullable UnaryOpNode.Op parseUnaryOp(final @Nullable ANTLRv4Parser.EbnfSuffixContext context) {
+        if (context == null) {
+            return null;
+        }
+        if (context.STAR() != null) {
+            return UnaryOpNode.Op.ZERO_OR_MORE;
+        }
+        if (context.PLUS() != null) {
+            return UnaryOpNode.Op.ONE_OR_MORE;
+        }
+        return UnaryOpNode.Op.ZERO_OR_ONE;
+    }
+
     protected @Nullable LexerGrammar loadLexerGrammar(final String name) {
         final var path = parentDir.resolve(STR."\{name}.g4");
         if (!Files.exists(path)) {
             System.err.println(STR."Lexer grammar file \{path} does not exist");
             return null;
         }
-        try (final var stream = Files.newInputStream(path); final var channel = Channels.newChannel(stream)) {
-            final var charStream = CharStreams.fromChannel(channel, StandardCharsets.UTF_8);
-            final var lexer = new ANTLRv4Lexer(charStream);
-            final var tokenStream = new CommonTokenStream(lexer);
-            tokenStream.fill();
-            final var parser = new ANTLRv4Parser(tokenStream);
-            parser.removeErrorListeners();
-            parser.addErrorListener(DefaultErrorListener.INSTANCE);
-            final var context = parser.grammarSpec();
-            final var lexerGrammar = LexerGrammarParser.parse(parentDir, context);
-            if (lexerGrammar == null) {
-                System.err.println(STR."Failed to parse lexer grammar file \{path}");
-                return null;
-            }
-            return lexerGrammar;
-        }
-        catch (Throwable error) {
-            System.err.println(STR."Could not load lexer grammar file \{path}: \{error.getMessage()}");
+        final var context = Transpiler.loadGrammar(path);
+        final var lexerGrammar = LexerGrammarParser.parse(parentDir, context);
+        if (lexerGrammar == null) {
+            System.err.println(STR."Failed to parse lexer grammar file \{path}");
             return null;
         }
+        return lexerGrammar;
     }
 
     @Override
