@@ -39,6 +39,10 @@ dependencies {
     implementation group: 'org.antlr', name: 'antlr4-runtime', version: config.antlr_version, changing: true
     implementation group: 'org.apiguardian', name: 'apiguardian-api', version: config.apiguard_version, changing: true
 
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: config.jackson_version, changing: true
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: config.jackson_version, changing: true
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: config.jackson_version, changing: true
+
     implementation group: 'io.karma.kommons', name: 'kommons', version: config.kommons_version, changing: true
     implementation group: 'io.karma.ferrous', name: 'antlr-frontend', version: config.antlr_frontend_version
 
@@ -85,6 +89,7 @@ tasks.withType(Jar) {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+    options.compilerArgs << "--enable-preview"
     sourceCompatibility = config.java_version
     targetCompatibility = config.java_version
 }
