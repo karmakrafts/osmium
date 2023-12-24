@@ -32,11 +32,8 @@ public final class LexerGrammar extends AbstractGrammar {
         super(name);
     }
 
-    public void addImport(final LexerGrammar grammar) {
-        if (imports.contains(grammar)) {
-            return;
-        }
-        imports.add(grammar);
+    public void addImports(final List<LexerGrammar> imports) {
+        this.imports.addAll(imports);
     }
 
     @Override

@@ -15,7 +15,8 @@
 
 package io.karma.ferrous.osmium.parser;
 
-import io.karma.ferrous.antlr.ANTLRv4Parser;
+import io.karma.ferrous.antlr.ANTLRv4Parser.DelegateGrammarsContext;
+import io.karma.ferrous.antlr.ANTLRv4Parser.GrammarDeclContext;
 import io.karma.ferrous.osmium.grammar.LexerGrammar;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -46,10 +47,20 @@ public final class LexerGrammarParser extends ParseAdapter {
     }
 
     @Override
-    public void enterGrammarDecl(final ANTLRv4Parser.GrammarDeclContext context) {
+    public void enterGrammarDecl(final GrammarDeclContext context) {
         if (context.grammarType().LEXER() == null) {
             throw new IllegalStateException("Grammar is not a lexer grammar");
         }
         grammar = new LexerGrammar(context.identifier().getText());
+    }
+
+    @Override
+    public void enterDelegateGrammars(final DelegateGrammarsContext context) {
+        // @formatter:off
+        grammar.addImports(context.delegateGrammar()
+            .stream()
+            .map(importContext -> loadLexerGrammar(importContext.identifier().getFirst().getText()))
+            .toList());
+        // @formatter:on
     }
 }
