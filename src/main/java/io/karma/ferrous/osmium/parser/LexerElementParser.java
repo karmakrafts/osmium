@@ -16,7 +16,6 @@
 package io.karma.ferrous.osmium.parser;
 
 import io.karma.ferrous.antlr.ANTLRv4Parser.LexerAltListContext;
-import io.karma.ferrous.antlr.ANTLRv4Parser.LexerBlockContext;
 import io.karma.ferrous.antlr.ANTLRv4Parser.LexerElementContext;
 import io.karma.ferrous.osmium.grammar.node.*;
 import org.antlr.v4.runtime.ParserRuleContext;
