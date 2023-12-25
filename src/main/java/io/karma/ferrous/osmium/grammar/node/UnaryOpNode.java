@@ -16,6 +16,7 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +29,12 @@ import java.util.List;
 public final class UnaryOpNode implements Node {
     private final Op op;
     private Node node;
+    private Node parent;
 
     public UnaryOpNode(final Op op, final Node node) {
         this.op = op;
         this.node = node;
+        node.setParent(this);
     }
 
     public Op getOp() {
@@ -40,6 +43,16 @@ public final class UnaryOpNode implements Node {
 
     public Node getNode() {
         return node;
+    }
+
+    @Override
+    public @Nullable Node getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(final @Nullable Node parent) {
+        this.parent = parent;
     }
 
     @Override

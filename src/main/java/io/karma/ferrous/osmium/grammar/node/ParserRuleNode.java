@@ -16,6 +16,7 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +29,24 @@ import java.util.List;
 public final class ParserRuleNode implements NamedNode {
     private final String name;
     private final ArrayList<Node> children = new ArrayList<>();
+    private Node parent;
 
     public ParserRuleNode(final String name, final List<Node> children) {
         this.name = name;
         this.children.addAll(children);
+        for (final var child : children) {
+            child.setParent(this);
+        }
+    }
+
+    @Override
+    public @Nullable Node getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(final @Nullable Node parent) {
+        this.parent = parent;
     }
 
     @Override

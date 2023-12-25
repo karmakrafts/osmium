@@ -18,24 +18,20 @@ package io.karma.ferrous.osmium.grammar.node;
 import org.apiguardian.api.API;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Alexander Hinze
- * @since 24/12/2023
+ * @since 25/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class FragmentNode implements NamedNode {
-    private final String name;
-    private final List<Node> children;
+public final class SequenceNode implements Node {
+    private final ArrayList<Node> children = new ArrayList<>();
     private Node parent;
 
-    public FragmentNode(final String name, final List<Node> children) {
-        this.name = name;
-        this.children = children;
-        for (final var child : children) {
-            child.setParent(this);
-        }
+    public SequenceNode(final List<Node> children) {
+        this.children.addAll(children);
     }
 
     @Override
@@ -54,22 +50,17 @@ public final class FragmentNode implements NamedNode {
     }
 
     @Override
-    public int getChildCount() {
-        return children.size();
-    }
-
-    @Override
     public List<? extends Node> getChildren() {
         return children;
     }
 
     @Override
-    public String getName() {
-        return name;
+    public int getChildCount() {
+        return children.size();
     }
 
     @Override
     public NodeType getType() {
-        return NodeType.FRAGMENT;
+        return NodeType.SEQUENCE;
     }
 }

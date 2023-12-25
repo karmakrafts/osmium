@@ -16,6 +16,7 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Alexander Hinze
@@ -23,11 +24,17 @@ import org.apiguardian.api.API;
  */
 @API(status = API.Status.INTERNAL)
 public final class AnyMatchNode implements Node {
-    public static final AnyMatchNode INSTANCE = new AnyMatchNode();
+    private Node parent;
 
-    // @formatter:off
-    private AnyMatchNode() {}
-    // @formatter:on
+    @Override
+    public @Nullable Node getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(final @Nullable Node parent) {
+        this.parent = parent;
+    }
 
     @Override
     public NodeType getType() {

@@ -21,14 +21,13 @@ import io.karma.ferrous.antlr.ANTLRv4Parser.LexerRuleSpecContext;
 import io.karma.ferrous.osmium.grammar.LexerGrammar;
 import io.karma.ferrous.osmium.grammar.node.FragmentNode;
 import io.karma.ferrous.osmium.grammar.node.LexerRuleNode;
-import io.karma.ferrous.osmium.grammar.node.Node;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apiguardian.api.API;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * @author Alexander Hinze
@@ -72,15 +71,12 @@ public final class LexerGrammarParser extends ParseAdapter {
     @Override
     public void enterLexerRuleSpec(final LexerRuleSpecContext context) {
         final var name = context.TOKEN_REF().getText();
-        final var altContexts = context.lexerRuleBlock().lexerAltList().lexerAlt();
-        final var children = new ArrayList<Node>();
-        for (final var altContext : altContexts) {
-            children.addAll(LexerElementParser.parse(parentDir, altContext.lexerElements()));
-        }
+        final var altListContext = context.lexerRuleBlock().lexerAltList();
+        final var altList = LexerElementParser.parse(parentDir, altListContext);
         if (context.FRAGMENT() != null) { // We are parsing a fragment
-            grammar.addNode(new FragmentNode(name, children));
+            grammar.addNode(new FragmentNode(name, Collections.singletonList(altList)));
             return;
         }
-        grammar.addNode(new LexerRuleNode(name, children));
+        grammar.addNode(new LexerRuleNode(name, Collections.singletonList(altList)));
     }
 }

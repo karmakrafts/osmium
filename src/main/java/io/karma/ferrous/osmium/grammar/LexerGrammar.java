@@ -15,13 +15,9 @@
 
 package io.karma.ferrous.osmium.grammar;
 
-import io.karma.ferrous.osmium.grammar.node.NamedNode;
-import io.karma.ferrous.osmium.grammar.node.NodeType;
-import io.karma.ferrous.osmium.grammar.node.ReferenceNode;
 import org.apiguardian.api.API;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -37,38 +33,17 @@ public final class LexerGrammar extends AbstractGrammar {
         super(name);
     }
 
-    public void resolveRootNodes(final NamedNode node, final HashMap<String, NamedNode> replacements) {
-        if (node.getType() != NodeType.REFERENCE) {
-            return;
-        }
-        final var refNode = (ReferenceNode) node;
-        final var refName = refNode.getName();
-        final var ref = nodes.get(refName);
-        if (ref == null) {
-            System.err.println(STR."Could not resolve reference \{refName}");
-            return;
-        }
-        replacements.put(refName, ref);
-    }
-
     @Override
     public Grammar resolve() {
         if (isResolved) {
             return this;
         }
-        for (final var imprt : imports) { // First resolve all imported grammars
-            imprt.resolve();
+        for (final var _import : imports) { // First resolve all imported grammars
+            _import.resolve();
         }
-        // Resolve all root nodes in the lexer
         final var nodes = this.nodes.values();
-        final var replacements = new HashMap<String, NamedNode>();
         for (final var node : nodes) {
-            resolveRootNodes(node, replacements);
-        }
-        this.nodes.putAll(replacements); // Overwrite all resolved entries
-        // Resolve all child nodes
-        for (final var node : nodes) {
-            node.resolve(this.nodes);
+            node.resolve(node, this.nodes);
         }
         isResolved = true;
         return this;

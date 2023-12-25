@@ -16,25 +16,37 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Alexander Hinze
- * @since 24/12/2023
+ * @since 25/12/2023
  */
 @API(status = API.Status.INTERNAL)
 public final class AltListNode implements Node {
     private final ArrayList<Node> children = new ArrayList<>();
+    private Node parent;
 
     public AltListNode(final List<Node> children) {
         this.children.addAll(children);
     }
 
     @Override
-    public void setChild(final int index, final Node child) {
-        children.set(index, child);
+    public @Nullable Node getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(final @Nullable Node parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public List<? extends Node> getChildren() {
+        return children;
     }
 
     @Override
@@ -43,8 +55,8 @@ public final class AltListNode implements Node {
     }
 
     @Override
-    public List<? extends Node> getChildren() {
-        return children;
+    public void setChild(final int index, final Node child) {
+        children.set(index, child);
     }
 
     @Override

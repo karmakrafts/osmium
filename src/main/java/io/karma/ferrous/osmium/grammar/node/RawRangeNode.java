@@ -16,6 +16,7 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Alexander Hinze
@@ -24,6 +25,7 @@ import org.apiguardian.api.API;
 @API(status = API.Status.INTERNAL)
 public final class RawRangeNode implements Node {
     private final String pattern;
+    private Node parent;
 
     public RawRangeNode(final String pattern) {
         this.pattern = pattern;
@@ -31,6 +33,16 @@ public final class RawRangeNode implements Node {
 
     public String getPattern() {
         return pattern;
+    }
+
+    @Override
+    public @Nullable Node getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(final @Nullable Node parent) {
+        this.parent = parent;
     }
 
     @Override

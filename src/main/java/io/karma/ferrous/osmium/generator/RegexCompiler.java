@@ -17,7 +17,6 @@ package io.karma.ferrous.osmium.generator;
 
 import io.karma.ferrous.osmium.grammar.node.*;
 import org.apiguardian.api.API;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
 
@@ -31,45 +30,58 @@ public final class RegexCompiler {
     private RegexCompiler() {}
     // @formatter:on
 
-    private static char escape(final char value) {
-        return value;
+    private static String sanitize(final char value) {
+        return switch(value) { // @formatter:off
+            case '.' -> "\\.";
+            case '?' -> "\\?";
+            case '[' -> "\\[";
+            case '(' -> "\\(";
+            default  -> Character.toString(value);
+        }; // @formatter:on
     }
 
-    private static String escape(final String value) {
+    private static String sanitize(final String value) {
         final var length = value.length();
         final var builder = new StringBuilder(length); // At least n chars
         for (var i = 0; i < length; i++) {
-            builder.append(escape(value.charAt(i)));
+            builder.append(sanitize(value.charAt(i)));
         }
         return builder.toString();
     }
 
-    private static void compileNode(final Node node, final StringBuilder builder, final @Nullable Node parent) {
+    private static void compileNode(final Node node, final StringBuilder builder) {
         switch (node.getType()) {
-            case LEXER_RULE, PARSER_RULE, FRAGMENT -> {
+            case GRAMMAR, LEXER_RULE, PARSER_RULE, SEQUENCE, FRAGMENT -> {
                 for (final var child : node.getChildren()) {
-                    if (child == parent) {
-                        continue; // Prevent endless recursion
-                    }
-                    compileNode(child, builder, node);
+                    compileNode(child, builder);
                 }
+            }
+            case GROUP -> {
+                builder.append('(');
+                for (final var child : node.getChildren()) {
+                    compileNode(child, builder);
+                }
+                builder.append(')');
             }
             case ALT_LIST -> {
                 final var count = node.getChildCount();
                 final var children = node.getChildren();
+                if (count > 1) {
+                    builder.append('(');
+                }
                 for (var i = 0; i < count; i++) {
                     final var child = children.get(i);
-                    if (child == parent) {
-                        continue; // Prevent endless recursion
-                    }
-                    compileNode(child, builder, node);
-                    if (i > 0 && i < count - 1) {
+                    compileNode(child, builder);
+                    if (i < count - 1) {
                         builder.append('|');
                     }
                 }
+                if (count > 1) {
+                    builder.append(')');
+                }
             }
             case ANY_MATCH -> builder.append('.');
-            case TEXT -> builder.append(((TextNode) node).getText());
+            case TEXT -> builder.append(sanitize(((TextNode) node).getText()));
             case RANGE -> {
                 final var range = (RangeNode) node;
                 // @formatter:off
@@ -88,30 +100,28 @@ public final class RegexCompiler {
                     .append(']');
                 // @formatter:on
             }
-            case GROUP -> {
-                builder.append('(');
-                for (final var child : node.getChildren()) {
-                    if (child == parent) {
-                        continue; // Prevent endless recursion
-                    }
-                    compileNode(child, builder, node);
-                }
-                builder.append(')');
-            }
             case UNARY_OP -> {
                 final var unaryOpNode = (UnaryOpNode) node;
                 final var unaryOp = unaryOpNode.getOp();
                 final var child = unaryOpNode.getNode();
-                if (child == parent) {
+                if (child.getType() == NodeType.UNARY_OP) {
+                    compileNode(child, builder);
                     return;
                 }
                 if (unaryOp == UnaryOpNode.Op.MATCH_UNTIL) {
                     builder.append(STR."[\{unaryOp.getRegexPattern()}");
-                    compileNode(child, builder, node);
+                    compileNode(child, builder);
                     builder.append(']');
                     return;
                 }
-                compileNode(child, builder, node);
+                final var isGroup = child.getChildCount() > 1;
+                if (isGroup) {
+                    builder.append('(');
+                }
+                compileNode(child, builder);
+                if (isGroup) {
+                    builder.append(')');
+                }
                 builder.append(unaryOp.getRegexPattern());
             }
         }
@@ -119,7 +129,7 @@ public final class RegexCompiler {
 
     public static String compilePattern(final Node node) {
         final var builder = new StringBuilder();
-        compileNode(node, builder, null);
+        compileNode(node, builder);
         return builder.toString();
     }
 

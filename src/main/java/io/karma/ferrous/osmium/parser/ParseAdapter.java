@@ -20,6 +20,7 @@ import io.karma.ferrous.antlr.ANTLRv4ParserListener;
 import io.karma.ferrous.osmium.Transpiler;
 import io.karma.ferrous.osmium.grammar.LexerGrammar;
 import io.karma.ferrous.osmium.grammar.node.UnaryOpNode;
+import io.karma.kommons.function.Functions;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -60,7 +61,7 @@ public abstract class ParseAdapter implements ANTLRv4ParserListener {
             System.err.println(STR."Lexer grammar file \{path} does not exist");
             return null;
         }
-        final var context = Transpiler.loadGrammar(path);
+        final var context = Functions.tryGet(() -> Transpiler.loadGrammar(path), null);
         final var lexerGrammar = LexerGrammarParser.parse(parentDir, context);
         if (lexerGrammar == null) {
             System.err.println(STR."Failed to parse lexer grammar file \{path}");

@@ -28,6 +28,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.apiguardian.api.API;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -50,7 +51,7 @@ public final class Transpiler {
         addGenerator(new PygmentsGenerator());
     }
 
-    public static @Nullable GrammarSpecContext loadGrammar(final Path path) {
+    public static GrammarSpecContext loadGrammar(final Path path) throws IOException {
         try (final var stream = Files.newInputStream(path); final var channel = Channels.newChannel(stream)) {
             final var charStream = CharStreams.fromChannel(channel, StandardCharsets.UTF_8);
             final var lexer = new ANTLRv4Lexer(charStream);
@@ -60,10 +61,6 @@ public final class Transpiler {
             parser.removeErrorListeners();
             parser.addErrorListener(DefaultErrorListener.INSTANCE);
             return parser.grammarSpec();
-        }
-        catch (Throwable error) {
-            System.err.println(error.getMessage());
-            return null;
         }
     }
 
@@ -95,24 +92,18 @@ public final class Transpiler {
         return generators.get(name);
     }
 
-    public void transpile(final Path inPath, final Path outPath, final Generator generator) {
+    public void transpile(final Path inPath, final Path outPath, final Generator generator) throws IOException {
         try (final var outStream = Files.newOutputStream(outPath); final var outChannel = Channels.newChannel(outStream)) {
             final var grammarContext = loadGrammar(inPath);
-            if (grammarContext == null) {
-                throw new IllegalStateException(STR."Could not load grammar \{inPath}");
-            }
             final var grammar = ParserGrammarParser.parse(inPath.getParent(), grammarContext);
             if (grammar == null) {
                 throw new IllegalStateException("Could not parse grammar");
             }
             generator.generate(outChannel, grammar, type -> generator.getTokenType(type, config));
         }
-        catch (Throwable error) {
-            System.err.println(error.getMessage());
-        }
     }
 
-    public void transpile(final Path inPath, final Path outPath, final String generator) {
+    public void transpile(final Path inPath, final Path outPath, final String generator) throws IOException {
         transpile(inPath, outPath, getGenerator(generator));
     }
 }

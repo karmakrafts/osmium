@@ -16,6 +16,7 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,10 +30,17 @@ import java.util.Map;
 public interface Node {
     NodeType getType();
 
-    default void resolve(final Map<String, NamedNode> nodes) {
+    default @Nullable Node getParent() {
+        return null;
+    }
+
+    default void setParent(final @Nullable Node parent) {
+    }
+
+    default void resolve(final NamedNode rootNode, final Map<String, NamedNode> nodes) {
         final var children = getChildren();
         for (final var child : children) {
-            child.resolve(nodes); // Resolve from inside out
+            child.resolve(rootNode, nodes); // Resolve from inside out
         }
         final var count = children.size();
         for (var i = 0; i < count; i++) {
@@ -41,7 +49,15 @@ public interface Node {
                 continue;
             }
             final var refName = ((ReferenceNode) child).getName();
-            setChild(i, nodes.get(refName));
+            final var refNode = nodes.get(refName);
+            if (refNode == null) {
+                continue;
+            }
+            if (refNode == rootNode) {
+                setChild(i, new SelfReferenceNode());
+                continue;
+            }
+            setChild(i, refNode);
         }
     }
 

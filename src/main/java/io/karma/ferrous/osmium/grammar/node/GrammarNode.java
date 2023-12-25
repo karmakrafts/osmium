@@ -19,24 +19,12 @@ import org.apiguardian.api.API;
 
 /**
  * @author Alexander Hinze
- * @since 24/12/2023
+ * @since 25/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public enum NodeType {
-    // @formatter:off
-    GRAMMAR,
-    TEXT,
-    FRAGMENT,
-    LEXER_RULE,
-    PARSER_RULE,
-    GROUP,
-    ALT_LIST,
-    UNARY_OP,
-    RANGE,
-    RAW_RANGE,
-    REFERENCE,
-    ANY_MATCH,
-    SELF_REFERENCE,
-    SEQUENCE
-    // @formatter:on
+public final class GrammarNode implements Node {
+    @Override
+    public NodeType getType() {
+        return NodeType.GRAMMAR;
+    }
 }

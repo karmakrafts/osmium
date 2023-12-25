@@ -16,6 +16,7 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,14 +29,28 @@ import java.util.List;
 public final class GroupNode implements Node {
     private final ArrayList<Node> children = new ArrayList<>();
     private final boolean isRightAssoc;
+    private Node parent;
 
     public GroupNode(final List<Node> children, final boolean isRightAssoc) {
         this.children.addAll(children);
         this.isRightAssoc = isRightAssoc;
+        for (final var child : children) {
+            child.setParent(this);
+        }
     }
 
     public boolean isRightAssoc() {
         return isRightAssoc;
+    }
+
+    @Override
+    public @Nullable Node getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(final @Nullable Node parent) {
+        this.parent = parent;
     }
 
     @Override

@@ -15,6 +15,7 @@
 
 package io.karma.ferrous.osmium.grammar;
 
+import io.karma.ferrous.osmium.grammar.node.GrammarNode;
 import io.karma.ferrous.osmium.grammar.node.NamedNode;
 import org.apiguardian.api.API;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +33,7 @@ import java.util.List;
 public abstract class AbstractGrammar implements Grammar {
     protected final String name;
     protected final LinkedHashMap<String, NamedNode> nodes = new LinkedHashMap<>();
+    protected final GrammarNode rootNode = new GrammarNode();
 
     protected AbstractGrammar(final String name) {
         this.name = name;
@@ -39,15 +41,18 @@ public abstract class AbstractGrammar implements Grammar {
 
     public void addNodes(final List<? extends NamedNode> nodes) {
         for (final var node : nodes) {
+            node.setParent(rootNode);
             this.nodes.put(node.getName(), node);
         }
     }
 
     public void addNode(final NamedNode node) {
+        node.setParent(rootNode);
         nodes.put(node.getName(), node);
     }
 
     public void removeNode(final NamedNode node) {
+        node.setParent(null);
         nodes.remove(node.getName());
     }
 
