@@ -16,7 +16,7 @@
 package io.karma.ferrous.osmium.generator;
 
 import io.karma.ferrous.osmium.TranspilerConfig;
-import io.karma.ferrous.osmium.grammar.ParserGrammar;
+import io.karma.ferrous.osmium.grammar.Grammar;
 import io.karma.ferrous.osmium.util.TokenType;
 import org.apiguardian.api.API;
 
@@ -72,7 +72,7 @@ public final class PygmentsGenerator implements Generator {
     }
 
     @Override
-    public void generate(final WritableByteChannel channel, final ParserGrammar grammar,
+    public void generate(final WritableByteChannel channel, final Grammar grammar,
                          final Function<TokenType, String> tokenTransformer) {
 
     }

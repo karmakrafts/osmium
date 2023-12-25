@@ -18,18 +18,18 @@ package io.karma.ferrous.osmium.grammar.node;
 import org.apiguardian.api.API;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Alexander Hinze
  * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class UnaryOpNode extends AbstractContainerNode<Node> {
+public final class UnaryOpNode implements Node {
     private final Op op;
-    private final Node node;
+    private Node node;
 
     public UnaryOpNode(final Op op, final Node node) {
-        super(Collections.singletonList(node));
         this.op = op;
         this.node = node;
     }
@@ -43,11 +43,44 @@ public final class UnaryOpNode extends AbstractContainerNode<Node> {
     }
 
     @Override
+    public void setChild(int index, Node child) {
+        if (index != 0) {
+            throw new IndexOutOfBoundsException();
+        }
+        node = child;
+    }
+
+    @Override
+    public int getChildCount() {
+        return 1;
+    }
+
+    @Override
+    public List<? extends Node> getChildren() {
+        return Collections.singletonList(node);
+    }
+
+    @Override
     public NodeType getType() {
         return NodeType.UNARY_OP;
     }
 
     public enum Op {
-        ZERO_OR_MORE, ONE_OR_MORE, ZERO_OR_ONE, MATCH_UNTIL
+        // @formatter:off
+        ZERO_OR_MORE("*"),
+        ONE_OR_MORE ("+"),
+        ZERO_OR_ONE ("?"),
+        MATCH_UNTIL ("^");
+        // @formatter:on
+
+        private final String regexPattern;
+
+        Op(final String regexPattern) {
+            this.regexPattern = regexPattern;
+        }
+
+        public String getRegexPattern() {
+            return regexPattern;
+        }
     }
 }

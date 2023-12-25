@@ -17,6 +17,7 @@ package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,12 +25,28 @@ import java.util.List;
  * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class LexerRuleNode extends AbstractContainerNode<Node> implements NamedNode {
+public final class LexerRuleNode implements NamedNode {
     private final String name;
+    private final ArrayList<Node> children = new ArrayList<>();
 
     public LexerRuleNode(final String name, final List<Node> children) {
-        super(children);
         this.name = name;
+        this.children.addAll(children);
+    }
+
+    @Override
+    public void setChild(final int index, final Node child) {
+        children.set(index, child);
+    }
+
+    @Override
+    public int getChildCount() {
+        return children.size();
+    }
+
+    @Override
+    public List<? extends Node> getChildren() {
+        return children;
     }
 
     @Override

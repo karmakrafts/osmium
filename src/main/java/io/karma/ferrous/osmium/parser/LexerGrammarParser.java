@@ -19,8 +19,9 @@ import io.karma.ferrous.antlr.ANTLRv4Parser.DelegateGrammarsContext;
 import io.karma.ferrous.antlr.ANTLRv4Parser.GrammarDeclContext;
 import io.karma.ferrous.antlr.ANTLRv4Parser.LexerRuleSpecContext;
 import io.karma.ferrous.osmium.grammar.LexerGrammar;
-import io.karma.ferrous.osmium.grammar.node.*;
-import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
+import io.karma.ferrous.osmium.grammar.node.FragmentNode;
+import io.karma.ferrous.osmium.grammar.node.LexerRuleNode;
+import io.karma.ferrous.osmium.grammar.node.Node;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apiguardian.api.API;
@@ -71,49 +72,10 @@ public final class LexerGrammarParser extends ParseAdapter {
     @Override
     public void enterLexerRuleSpec(final LexerRuleSpecContext context) {
         final var name = context.TOKEN_REF().getText();
-        System.out.println(STR."Found lexer rule/fragment: \{name}");
         final var altContexts = context.lexerRuleBlock().lexerAltList().lexerAlt();
         final var children = new ArrayList<Node>();
         for (final var altContext : altContexts) {
-            final var elementContexts = altContext.lexerElements().lexerElement();
-            for (final var elementContext : elementContexts) {
-                final var atomContext = elementContext.lexerAtom();
-                final var unaryOp = parseUnaryOp(elementContext.ebnfSuffix());
-                Node child = null;
-                if (atomContext != null) {
-                    // Ranges
-                    final var rangeContext = atomContext.characterRange();
-                    if (rangeContext != null) {
-                        final var literals = rangeContext.STRING_LITERAL();
-                        final var start = literals.getFirst().getText().charAt(0);
-                        final var end = literals.getLast().getText().charAt(0);
-                        final var chars = new CharOpenHashSet();
-                        for (var c = start; c <= end; c++) {
-                            chars.add(c);
-                        }
-                        child = new RangeNode(chars);
-                    }
-                    // Literal text and references
-                    final var terminalContext = atomContext.terminalDef();
-                    if (terminalContext != null) {
-                        final var literal = terminalContext.STRING_LITERAL();
-                        if (literal != null) {
-                            child = new TextNode(literal.getText());
-                        }
-                        else {
-                            child = new ReferenceNode(terminalContext.TOKEN_REF().getText());
-                        }
-                    }
-                }
-                if (child == null) {
-                    continue; // TODO: handle error
-                }
-                if (unaryOp != null) {
-                    children.add(new UnaryOpNode(unaryOp, child));
-                    continue;
-                }
-                children.add(child);
-            }
+            children.addAll(LexerElementParser.parse(parentDir, altContext.lexerElements()));
         }
         if (context.FRAGMENT() != null) { // We are parsing a fragment
             grammar.addNode(new FragmentNode(name, children));

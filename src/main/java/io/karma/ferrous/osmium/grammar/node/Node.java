@@ -19,6 +19,7 @@ import org.apiguardian.api.API;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Alexander Hinze
@@ -28,8 +29,32 @@ import java.util.List;
 public interface Node {
     NodeType getType();
 
+    default void resolve(final Map<String, NamedNode> nodes) {
+        final var children = getChildren();
+        for (final var child : children) {
+            child.resolve(nodes); // Resolve from inside out
+        }
+        final var count = children.size();
+        for (var i = 0; i < count; i++) {
+            final var child = children.get(i);
+            if (child.getType() != NodeType.REFERENCE) {
+                continue;
+            }
+            final var refName = ((ReferenceNode) child).getName();
+            setChild(i, nodes.get(refName));
+        }
+    }
+
+    default void setChild(final int index, final Node child) {
+        throw new UnsupportedOperationException();
+    }
+
     default List<? extends Node> getChildren() {
         return Collections.emptyList();
+    }
+
+    default int getChildCount() {
+        return getChildren().size();
     }
 
     default boolean isNamed() {

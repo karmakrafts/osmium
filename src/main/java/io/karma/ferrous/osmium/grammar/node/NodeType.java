@@ -29,9 +29,11 @@ public enum NodeType {
     LEXER_RULE,
     PARSER_RULE,
     GROUP,
-    BINARY_OP,
+    ALT_LIST,
     UNARY_OP,
     RANGE,
-    REFERENCE
+    RAW_RANGE,
+    REFERENCE,
+    ANY_MATCH
     // @formatter:on
 }

@@ -16,12 +16,15 @@
 package io.karma.ferrous.osmium.generator;
 
 import io.karma.ferrous.osmium.TranspilerConfig;
+import io.karma.ferrous.osmium.grammar.Grammar;
 import io.karma.ferrous.osmium.grammar.ParserGrammar;
+import io.karma.ferrous.osmium.grammar.node.NamedNode;
 import io.karma.ferrous.osmium.util.TokenType;
 import org.apiguardian.api.API;
 
 import java.nio.channels.WritableByteChannel;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -72,9 +75,18 @@ public final class TextMateGenerator implements Generator {
     }
 
     @Override
-    public void generate(final WritableByteChannel channel, final ParserGrammar grammar,
+    public void generate(final WritableByteChannel channel, final Grammar grammar,
                          final Function<TokenType, String> tokenTransformer) {
-
+        if (!(grammar instanceof ParserGrammar parserGrammar)) {
+            return;
+        }
+        final List<NamedNode> nodes = parserGrammar.getLexerGrammar().getNodes();
+        if (nodes.isEmpty()) {
+            return;
+        }
+        for (final NamedNode node : nodes) {
+            System.out.println(STR."\{node.getName()}: \{RegexCompiler.compilePattern(node)}");
+        }
     }
 
     @Override

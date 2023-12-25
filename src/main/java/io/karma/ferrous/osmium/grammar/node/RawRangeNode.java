@@ -17,43 +17,24 @@ package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
 
-import java.util.Arrays;
-
 /**
  * @author Alexander Hinze
- * @since 24/12/2023
+ * @since 25/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class BinaryOpNode extends AbstractContainerNode<Node> {
-    private final Op op;
-    private final Node lhs;
-    private final Node rhs;
+public final class RawRangeNode implements Node {
+    private final String pattern;
 
-    public BinaryOpNode(final Op op, final Node lhs, final Node rhs) {
-        super(Arrays.asList(lhs, rhs));
-        this.op = op;
-        this.lhs = lhs;
-        this.rhs = rhs;
+    public RawRangeNode(final String pattern) {
+        this.pattern = pattern;
     }
 
-    public Op getOp() {
-        return op;
-    }
-
-    public Node getLhs() {
-        return lhs;
-    }
-
-    public Node getRhs() {
-        return rhs;
+    public String getPattern() {
+        return pattern;
     }
 
     @Override
     public NodeType getType() {
-        return NodeType.BINARY_OP;
-    }
-
-    public enum Op {
-        DISJUNCTION
+        return NodeType.RAW_RANGE;
     }
 }

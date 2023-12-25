@@ -18,8 +18,6 @@ package io.karma.ferrous.osmium.grammar;
 import org.apiguardian.api.API;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 /**
  * @author Alexander Hinze
  * @since 20/12/2023
@@ -27,9 +25,20 @@ import java.util.List;
 @API(status = API.Status.INTERNAL)
 public final class ParserGrammar extends AbstractGrammar {
     private LexerGrammar lexerGrammar;
+    private boolean isResolved;
 
     public ParserGrammar(final String name) {
         super(name);
+    }
+
+    @Override
+    public Grammar resolve() {
+        if (isResolved) {
+            return this;
+        }
+        lexerGrammar.resolve();
+        isResolved = true;
+        return this;
     }
 
     public @Nullable LexerGrammar getLexerGrammar() {
@@ -38,11 +47,6 @@ public final class ParserGrammar extends AbstractGrammar {
 
     public void setLexerGrammar(final @Nullable LexerGrammar lexerGrammar) {
         this.lexerGrammar = lexerGrammar;
-    }
-
-    @Override
-    public List<? extends Grammar> getImports() {
-        return super.getImports();
     }
 
     @Override

@@ -13,28 +13,42 @@
  * limitations under the License.
  */
 
-package io.karma.ferrous.osmium.grammar;
+package io.karma.ferrous.osmium.grammar.node;
 
-import io.karma.ferrous.osmium.grammar.node.NamedNode;
 import org.apiguardian.api.API;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Alexander Hinze
- * @since 20/12/2023
+ * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public interface Grammar {
-    default Grammar resolve() {
-        return this;
+public final class AltListNode implements Node {
+    private final ArrayList<Node> children = new ArrayList<>();
+
+    public AltListNode(final List<Node> children) {
+        this.children.addAll(children);
     }
 
-    String getName();
+    @Override
+    public void setChild(final int index, final Node child) {
+        children.set(index, child);
+    }
 
-    GrammarType getType();
+    @Override
+    public int getChildCount() {
+        return children.size();
+    }
 
-    List<Grammar> getImports();
+    @Override
+    public List<? extends Node> getChildren() {
+        return children;
+    }
 
-    List<NamedNode> getNodes();
+    @Override
+    public NodeType getType() {
+        return NodeType.ALT_LIST;
+    }
 }

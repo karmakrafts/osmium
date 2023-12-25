@@ -17,30 +17,20 @@ package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
 
-import java.util.List;
-
 /**
  * @author Alexander Hinze
- * @since 24/12/2023
+ * @since 25/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public abstract class AbstractContainerNode<C extends Node> implements Node {
-    protected final List<C> children;
+public final class AnyMatchNode implements Node {
+    public static final AnyMatchNode INSTANCE = new AnyMatchNode();
 
-    protected AbstractContainerNode(final List<C> children) {
-        this.children = children;
-    }
-
-    public void addChild(final C child) {
-        children.add(child);
-    }
-
-    public void removeChild(final C child) {
-        children.remove(child);
-    }
+    // @formatter:off
+    private AnyMatchNode() {}
+    // @formatter:on
 
     @Override
-    public List<? extends Node> getChildren() {
-        return children;
+    public NodeType getType() {
+        return NodeType.ANY_MATCH;
     }
 }

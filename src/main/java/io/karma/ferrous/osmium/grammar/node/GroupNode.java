@@ -17,6 +17,7 @@ package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,16 +25,32 @@ import java.util.List;
  * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class GroupNode extends AbstractContainerNode<Node> {
+public final class GroupNode implements Node {
+    private final ArrayList<Node> children = new ArrayList<>();
     private final boolean isRightAssoc;
 
     public GroupNode(final List<Node> children, final boolean isRightAssoc) {
-        super(children);
+        this.children.addAll(children);
         this.isRightAssoc = isRightAssoc;
     }
 
     public boolean isRightAssoc() {
         return isRightAssoc;
+    }
+
+    @Override
+    public void setChild(final int index, final Node child) {
+        children.set(index, child);
+    }
+
+    @Override
+    public int getChildCount() {
+        return children.size();
+    }
+
+    @Override
+    public List<? extends Node> getChildren() {
+        return children;
     }
 
     @Override

@@ -15,11 +15,13 @@
 
 package io.karma.ferrous.osmium.grammar;
 
-import io.karma.ferrous.osmium.grammar.node.Node;
+import io.karma.ferrous.osmium.grammar.node.NamedNode;
 import org.apiguardian.api.API;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -29,32 +31,38 @@ import java.util.List;
 @API(status = API.Status.INTERNAL)
 public abstract class AbstractGrammar implements Grammar {
     protected final String name;
-    protected final ArrayList<Node> nodes = new ArrayList<>();
+    protected final LinkedHashMap<String, NamedNode> nodes = new LinkedHashMap<>();
 
     protected AbstractGrammar(final String name) {
         this.name = name;
     }
 
-    public void addNodes(final List<? extends Node> nodes) {
-        this.nodes.addAll(nodes);
+    public void addNodes(final List<? extends NamedNode> nodes) {
+        for (final var node : nodes) {
+            this.nodes.put(node.getName(), node);
+        }
     }
 
-    public void addNode(final Node node) {
-        nodes.add(node);
+    public void addNode(final NamedNode node) {
+        nodes.put(node.getName(), node);
     }
 
-    public void removeNode(final Node node) {
-        nodes.remove(node);
+    public void removeNode(final NamedNode node) {
+        nodes.remove(node.getName());
+    }
+
+    public @Nullable NamedNode getNode(final String name) {
+        return nodes.get(name);
     }
 
     @Override
-    public List<? extends Grammar> getImports() {
+    public List<Grammar> getImports() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<? extends Node> getNodes() {
-        return nodes;
+    public List<NamedNode> getNodes() {
+        return new ArrayList<>(nodes.values());
     }
 
     @Override

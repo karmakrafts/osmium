@@ -17,6 +17,7 @@ package io.karma.ferrous.osmium.parser;
 
 import io.karma.ferrous.antlr.ANTLRv4Parser.GrammarDeclContext;
 import io.karma.ferrous.antlr.ANTLRv4Parser.OptionContext;
+import io.karma.ferrous.osmium.grammar.Grammar;
 import io.karma.ferrous.osmium.grammar.ParserGrammar;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -37,13 +38,13 @@ public final class ParserGrammarParser extends ParseAdapter {
         super(parentDir);
     }
 
-    public static @Nullable ParserGrammar parse(final Path parentDir, final @Nullable ParseTree context) {
+    public static @Nullable Grammar parse(final Path parentDir, final @Nullable ParseTree context) {
         if (context == null) {
             return null;
         }
         final var parser = new ParserGrammarParser(parentDir);
         ParseTreeWalker.DEFAULT.walk(parser, context);
-        return parser.grammar;
+        return parser.grammar.resolve();
     }
 
     @Override

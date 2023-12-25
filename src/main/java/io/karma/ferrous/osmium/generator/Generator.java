@@ -16,7 +16,7 @@
 package io.karma.ferrous.osmium.generator;
 
 import io.karma.ferrous.osmium.TranspilerConfig;
-import io.karma.ferrous.osmium.grammar.ParserGrammar;
+import io.karma.ferrous.osmium.grammar.Grammar;
 import io.karma.ferrous.osmium.util.TokenType;
 import org.apiguardian.api.API;
 
@@ -31,7 +31,7 @@ import java.util.function.Function;
 public interface Generator {
     String getName();
 
-    void generate(final WritableByteChannel channel, final ParserGrammar grammar,
+    void generate(final WritableByteChannel channel, final Grammar grammar,
                   final Function<TokenType, String> tokenTransformer);
 
     String getTokenType(final TokenType type, final TranspilerConfig config);

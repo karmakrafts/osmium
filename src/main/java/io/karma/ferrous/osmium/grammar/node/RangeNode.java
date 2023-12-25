@@ -24,10 +24,24 @@ import org.apiguardian.api.API;
  */
 @API(status = API.Status.INTERNAL)
 public final class RangeNode implements Node {
-    private final CharOpenHashSet chars;
+    private final char start;
+    private final char end;
+    private final CharOpenHashSet chars = new CharOpenHashSet();
 
-    public RangeNode(final CharOpenHashSet chars) {
-        this.chars = chars;
+    public RangeNode(final char start, final char end) {
+        this.start = start;
+        this.end = end;
+        for (char c = start; c <= end; c++) {
+            chars.add(c);
+        }
+    }
+
+    public char getStart() {
+        return start;
+    }
+
+    public char getEnd() {
+        return end;
     }
 
     public CharOpenHashSet getChars() {
