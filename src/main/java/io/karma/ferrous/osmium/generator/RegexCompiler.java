@@ -26,18 +26,20 @@ import java.util.regex.Pattern;
  */
 @API(status = API.Status.INTERNAL)
 public final class RegexCompiler {
+    private static final char[] CHARS_TO_ESCAPE = ".?[](){}<>*+$/=|:-".toCharArray();
+
     // @formatter:off
     private RegexCompiler() {}
     // @formatter:on
 
     private static String sanitize(final char value) {
-        return switch(value) { // @formatter:off
-            case '.' -> "\\.";
-            case '?' -> "\\?";
-            case '[' -> "\\[";
-            case '(' -> "\\(";
-            default  -> Character.toString(value);
-        }; // @formatter:on
+        for (final var c : CHARS_TO_ESCAPE) {
+            if (c != value) {
+                continue;
+            }
+            return STR."\\\{c}";
+        }
+        return Character.toString(value);
     }
 
     private static String sanitize(final String value) {
