@@ -27,6 +27,11 @@ public final class SelfReferenceNode implements Node {
     private Node parent;
 
     @Override
+    public boolean isVisible() {
+        return false;
+    }
+
+    @Override
     public @Nullable Node getParent() {
         return parent;
     }

@@ -44,6 +44,17 @@ public final class GroupNode implements Node {
     }
 
     @Override
+    public boolean isVisible() {
+        for (final var child : children) {
+            if (!child.isVisible()) {
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public @Nullable Node getParent() {
         return parent;
     }

@@ -66,8 +66,8 @@ public final class RegexCompiler {
                 builder.append(')');
             }
             case ALT_LIST -> {
-                final var count = node.getChildCount();
-                final var children = node.getChildren();
+                final var children = node.getVisibleChildren(); // We can't have empty alternatives in RegEx
+                final var count = children.size();
                 if (count > 1) {
                     builder.append('(');
                 }
@@ -116,7 +116,7 @@ public final class RegexCompiler {
                     builder.append(']');
                     return;
                 }
-                final var isGroup = child.getChildCount() > 1;
+                final var isGroup = child.getVisibleChildCount() > 1;
                 if (isGroup) {
                     builder.append('(');
                 }

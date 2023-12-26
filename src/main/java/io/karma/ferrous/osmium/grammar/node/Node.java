@@ -30,6 +30,10 @@ import java.util.Map;
 public interface Node {
     NodeType getType();
 
+    default boolean isVisible() {
+        return true;
+    }
+
     default @Nullable Node getParent() {
         return null;
     }
@@ -53,7 +57,7 @@ public interface Node {
             if (refNode == null) {
                 continue;
             }
-            if (refNode == rootNode) {
+            if (refNode == rootNode) { // Substitute self-ref node to prevent infinite recursion in compiler
                 setChild(i, new SelfReferenceNode());
                 continue;
             }
@@ -71,6 +75,22 @@ public interface Node {
 
     default int getChildCount() {
         return getChildren().size();
+    }
+
+    default int getVisibleChildCount() {
+        final var children = getChildren();
+        var count = 0;
+        for (final var child : children) {
+            if (!child.isVisible()) {
+                continue;
+            }
+            count++;
+        }
+        return count;
+    }
+
+    default List<? extends Node> getVisibleChildren() {
+        return getChildren().stream().filter(Node::isVisible).toList();
     }
 
     default boolean isNamed() {
