@@ -15,17 +15,16 @@
 
 package io.karma.ferrous.osmium.grammar.node;
 
+import io.karma.ferrous.osmium.util.RegexUtils;
 import org.apiguardian.api.API;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Alexander Hinze
  * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class TextNode implements Node {
+public final class TextNode extends AbstractNode {
     private final String text;
-    private Node parent;
 
     public TextNode(final String text) {
         this.text = text;
@@ -36,13 +35,8 @@ public final class TextNode implements Node {
     }
 
     @Override
-    public @Nullable Node getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(final @Nullable Node parent) {
-        this.parent = parent;
+    public void compileRegex(final StringBuilder builder) {
+        builder.append(RegexUtils.escape(text));
     }
 
     @Override

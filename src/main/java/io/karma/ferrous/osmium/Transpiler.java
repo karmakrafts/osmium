@@ -99,7 +99,7 @@ public final class Transpiler {
             if (grammar == null) {
                 throw new IllegalStateException("Could not parse grammar");
             }
-            generator.generate(outChannel, grammar, type -> generator.getTokenType(type, config));
+            generator.generate(outChannel, grammar, config);
         }
     }
 

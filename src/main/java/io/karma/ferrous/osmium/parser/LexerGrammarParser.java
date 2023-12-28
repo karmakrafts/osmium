@@ -27,7 +27,6 @@ import org.apiguardian.api.API;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.Collections;
 
 /**
  * @author Alexander Hinze
@@ -74,9 +73,13 @@ public final class LexerGrammarParser extends ParseAdapter {
         final var altListContext = context.lexerRuleBlock().lexerAltList();
         final var altList = LexerElementParser.parse(parentDir, altListContext);
         if (context.FRAGMENT() != null) { // We are parsing a fragment
-            grammar.addNode(new FragmentNode(name, Collections.singletonList(altList)));
+            final var fragment = new FragmentNode(name);
+            fragment.addChild(altList);
+            grammar.addNode(fragment);
             return;
         }
-        grammar.addNode(new LexerRuleNode(name, Collections.singletonList(altList)));
+        final var rule = new LexerRuleNode(name);
+        rule.addChild(altList);
+        grammar.addNode(rule);
     }
 }

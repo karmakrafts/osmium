@@ -25,7 +25,7 @@ import org.apiguardian.api.API;
 import java.nio.channels.WritableByteChannel;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Objects;
 
 /**
  * @author Alexander Hinze
@@ -75,22 +75,18 @@ public final class TextMateGenerator implements Generator {
     }
 
     @Override
-    public void generate(final WritableByteChannel channel, final Grammar grammar,
-                         final Function<TokenType, String> tokenTransformer) {
+    public void generate(final WritableByteChannel channel, final Grammar grammar, final TranspilerConfig config) {
         if (!(grammar instanceof ParserGrammar parserGrammar)) {
             return;
         }
-        final List<NamedNode> nodes = parserGrammar.getLexerGrammar().getNodes();
+        final List<NamedNode> nodes = Objects.requireNonNull(parserGrammar.getLexerGrammar()).getNodes();
         if (nodes.isEmpty()) {
             return;
         }
         for (final NamedNode node : nodes) {
-            System.out.println(STR."\{node.getName()}: \{RegexCompiler.compilePattern(node)}");
+            final var builder = new StringBuilder();
+            node.compileRegex(builder);
+            System.out.println(STR."\{node.getName()}: \{builder}");
         }
-    }
-
-    @Override
-    public String getTokenType(final TokenType type, final TranspilerConfig config) {
-        return STR."\{TOKEN_TYPES.get(type)}.\{config.namespace}";
     }
 }

@@ -41,18 +41,15 @@ public abstract class AbstractGrammar implements Grammar {
 
     public void addNodes(final List<? extends NamedNode> nodes) {
         for (final var node : nodes) {
-            node.setParent(rootNode);
             this.nodes.put(node.getName(), node);
         }
     }
 
     public void addNode(final NamedNode node) {
-        node.setParent(rootNode);
         nodes.put(node.getName(), node);
     }
 
     public void removeNode(final NamedNode node) {
-        node.setParent(null);
         nodes.remove(node.getName());
     }
 

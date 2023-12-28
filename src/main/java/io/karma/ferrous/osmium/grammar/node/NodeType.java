@@ -29,7 +29,6 @@ public enum NodeType {
     FRAGMENT,
     LEXER_RULE,
     PARSER_RULE,
-    GROUP,
     ALT_LIST,
     UNARY_OP,
     RANGE,
@@ -37,6 +36,10 @@ public enum NodeType {
     REFERENCE,
     ANY_MATCH,
     SELF_REFERENCE,
-    SEQUENCE
+    SEQUENCE;
     // @formatter:on
+
+    public boolean isRange() {
+        return this == RANGE || this == RAW_RANGE;
+    }
 }

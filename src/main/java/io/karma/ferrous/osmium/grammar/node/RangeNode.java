@@ -17,18 +17,16 @@ package io.karma.ferrous.osmium.grammar.node;
 
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
 import org.apiguardian.api.API;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Alexander Hinze
  * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class RangeNode implements Node {
+public final class RangeNode extends AbstractNode {
     private final char start;
     private final char end;
     private final CharOpenHashSet chars = new CharOpenHashSet();
-    private Node parent;
 
     public RangeNode(final char start, final char end) {
         this.start = start;
@@ -51,13 +49,8 @@ public final class RangeNode implements Node {
     }
 
     @Override
-    public @Nullable Node getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(final @Nullable Node parent) {
-        this.parent = parent;
+    public void compileRegex(final StringBuilder builder) {
+        builder.append(STR."[\{start}-\{end}]");
     }
 
     @Override

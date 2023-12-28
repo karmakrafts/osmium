@@ -16,29 +16,21 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Alexander Hinze
  * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class ReferenceNode implements NamedNode {
+public final class ReferenceNode extends AbstractNode implements NamedNode {
     private final String name;
-    private Node parent;
 
     public ReferenceNode(final String name) {
         this.name = name;
     }
 
     @Override
-    public @Nullable Node getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(final @Nullable Node parent) {
-        this.parent = parent;
+    public void compileRegex(final StringBuilder builder) {
     }
 
     @Override

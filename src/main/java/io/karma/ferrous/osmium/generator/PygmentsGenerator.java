@@ -22,7 +22,6 @@ import org.apiguardian.api.API;
 
 import java.nio.channels.WritableByteChannel;
 import java.util.EnumMap;
-import java.util.function.Function;
 
 /**
  * @author Alexander Hinze
@@ -72,13 +71,7 @@ public final class PygmentsGenerator implements Generator {
     }
 
     @Override
-    public void generate(final WritableByteChannel channel, final Grammar grammar,
-                         final Function<TokenType, String> tokenTransformer) {
+    public void generate(final WritableByteChannel channel, final Grammar grammar, final TranspilerConfig config) {
 
-    }
-
-    @Override
-    public String getTokenType(final TokenType type, final TranspilerConfig config) {
-        return TOKEN_TYPES.get(type);
     }
 }

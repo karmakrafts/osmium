@@ -16,52 +16,17 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Alexander Hinze
  * @since 24/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class LexerRuleNode implements NamedNode {
+public final class LexerRuleNode extends AbstractContainerNode implements NamedNode {
     private final String name;
-    private final ArrayList<Node> children = new ArrayList<>();
-    private Node parent;
 
-    public LexerRuleNode(final String name, final List<Node> children) {
+    public LexerRuleNode(final String name) {
         this.name = name;
-        this.children.addAll(children);
-        for (final var child : children) {
-            child.setParent(this);
-        }
-    }
-
-    @Override
-    public @Nullable Node getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(final @Nullable Node parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public void setChild(final int index, final Node child) {
-        children.set(index, child);
-    }
-
-    @Override
-    public int getChildCount() {
-        return children.size();
-    }
-
-    @Override
-    public List<? extends Node> getChildren() {
-        return children;
     }
 
     @Override

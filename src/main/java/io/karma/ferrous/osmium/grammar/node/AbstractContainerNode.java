@@ -17,29 +17,42 @@ package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Alexander Hinze
- * @since 25/12/2023
+ * @since 27/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class RawRangeNode extends AbstractNode {
-    private final String pattern;
+public abstract class AbstractContainerNode extends AbstractNode implements ContainerNode {
+    protected final ArrayList<Node> children = new ArrayList<>();
 
-    public RawRangeNode(final String pattern) {
-        this.pattern = pattern;
+    public void addChildren(final List<Node> children) {
+        this.children.addAll(children);
     }
 
-    public String getPattern() {
-        return pattern;
-    }
-
-    @Override
-    public void compileRegex(final StringBuilder builder) {
-        builder.append(STR."[\{pattern}]");
+    public void addChild(final Node child) {
+        children.add(child);
     }
 
     @Override
-    public NodeType getType() {
-        return NodeType.RAW_RANGE;
+    public Node removeChild(final int index) {
+        return children.remove(index);
+    }
+
+    @Override
+    public void setChild(final int index, final Node child) {
+        children.set(index, child);
+    }
+
+    @Override
+    public List<Node> getChildren() {
+        return children;
+    }
+
+    @Override
+    public int getChildCount() {
+        return children.size();
     }
 }

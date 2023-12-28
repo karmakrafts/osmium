@@ -22,7 +22,11 @@ import org.apiguardian.api.API;
  * @since 25/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class GrammarNode implements Node {
+public final class GrammarNode extends AbstractNode {
+    @Override
+    public void compileRegex(final StringBuilder builder) {
+    }
+
     @Override
     public NodeType getType() {
         return NodeType.GRAMMAR;

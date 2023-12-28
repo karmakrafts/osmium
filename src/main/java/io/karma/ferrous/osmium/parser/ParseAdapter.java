@@ -49,7 +49,7 @@ public abstract class ParseAdapter implements ANTLRv4ParserListener {
         if (context.STAR() != null) {
             return UnaryOpNode.Op.ZERO_OR_MORE;
         }
-        if (context.PLUS() != null) {
+        else if (context.PLUS() != null) {
             return UnaryOpNode.Op.ONE_OR_MORE;
         }
         return UnaryOpNode.Op.ZERO_OR_ONE;

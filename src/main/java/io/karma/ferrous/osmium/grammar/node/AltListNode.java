@@ -16,9 +16,7 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,48 +24,30 @@ import java.util.List;
  * @since 25/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class AltListNode implements Node {
-    private final ArrayList<Node> children = new ArrayList<>();
-    private Node parent;
+public final class AltListNode extends AbstractContainerNode {
+    public AltListNode() {
+    }
 
     public AltListNode(final List<Node> children) {
-        this.children.addAll(children);
+        addChildren(children);
     }
 
     @Override
-    public boolean isVisible() {
-        for (final var child : children) {
-            if (!child.isVisible()) {
-                continue;
-            }
-            return true;
+    public void compileRegex(final StringBuilder builder) {
+        final var numChildren = children.size();
+        final var isGroup = numChildren > 1;
+        if (isGroup) {
+            builder.append('(');
         }
-        return false;
-    }
-
-    @Override
-    public @Nullable Node getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(final @Nullable Node parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public List<? extends Node> getChildren() {
-        return children;
-    }
-
-    @Override
-    public int getChildCount() {
-        return children.size();
-    }
-
-    @Override
-    public void setChild(final int index, final Node child) {
-        children.set(index, child);
+        for (var i = 0; i < numChildren; i++) {
+            children.get(i).compileRegex(builder);
+            if (i < numChildren - 1) {
+                builder.append('|');
+            }
+        }
+        if (isGroup) {
+            builder.append(')');
+        }
     }
 
     @Override

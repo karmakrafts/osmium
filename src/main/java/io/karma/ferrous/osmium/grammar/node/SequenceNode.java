@@ -16,9 +16,7 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,48 +24,12 @@ import java.util.List;
  * @since 25/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class SequenceNode implements Node {
-    private final ArrayList<Node> children = new ArrayList<>();
-    private Node parent;
+public final class SequenceNode extends AbstractContainerNode {
+    public SequenceNode() {
+    }
 
     public SequenceNode(final List<Node> children) {
-        this.children.addAll(children);
-    }
-
-    @Override
-    public boolean isVisible() {
-        for (final var child : children) {
-            if (!child.isVisible()) {
-                continue;
-            }
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public @Nullable Node getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(final @Nullable Node parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public void setChild(final int index, final Node child) {
-        children.set(index, child);
-    }
-
-    @Override
-    public List<? extends Node> getChildren() {
-        return children;
-    }
-
-    @Override
-    public int getChildCount() {
-        return children.size();
+        addChildren(children);
     }
 
     @Override

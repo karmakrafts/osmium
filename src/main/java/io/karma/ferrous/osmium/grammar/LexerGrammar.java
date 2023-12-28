@@ -15,6 +15,7 @@
 
 package io.karma.ferrous.osmium.grammar;
 
+import io.karma.ferrous.osmium.grammar.node.ContainerNode;
 import org.apiguardian.api.API;
 
 import java.util.ArrayList;
@@ -43,7 +44,10 @@ public final class LexerGrammar extends AbstractGrammar {
         }
         final var nodes = this.nodes.values();
         for (final var node : nodes) {
-            node.resolve(node, this.nodes);
+            if (!(node instanceof ContainerNode container)) {
+                continue;
+            }
+            container.resolve(node, this.nodes);
         }
         isResolved = true;
         return this;

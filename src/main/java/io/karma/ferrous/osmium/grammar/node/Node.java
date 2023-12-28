@@ -16,11 +16,9 @@
 package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Alexander Hinze
@@ -28,69 +26,16 @@ import java.util.Map;
  */
 @API(status = API.Status.INTERNAL)
 public interface Node {
-    NodeType getType();
-
-    default boolean isVisible() {
-        return true;
-    }
-
-    default @Nullable Node getParent() {
-        return null;
-    }
-
-    default void setParent(final @Nullable Node parent) {
-    }
-
-    default void resolve(final NamedNode rootNode, final Map<String, NamedNode> nodes) {
-        final var children = getChildren();
-        for (final var child : children) {
-            child.resolve(rootNode, nodes); // Resolve from inside out
-        }
-        final var count = children.size();
-        for (var i = 0; i < count; i++) {
-            final var child = children.get(i);
-            if (child.getType() != NodeType.REFERENCE) {
-                continue;
-            }
-            final var refName = ((ReferenceNode) child).getName();
-            final var refNode = nodes.get(refName);
-            if (refNode == null) {
-                continue;
-            }
-            if (refNode == rootNode) { // Substitute self-ref node to prevent infinite recursion in compiler
-                setChild(i, new SelfReferenceNode());
-                continue;
-            }
-            setChild(i, refNode);
-        }
-    }
-
-    default void setChild(final int index, final Node child) {
-        throw new UnsupportedOperationException();
-    }
-
-    default List<? extends Node> getChildren() {
+    default List<ModeAction> getModeActions() {
         return Collections.emptyList();
     }
 
-    default int getChildCount() {
-        return getChildren().size();
-    }
+    NodeType getType();
 
-    default int getVisibleChildCount() {
-        final var children = getChildren();
-        var count = 0;
-        for (final var child : children) {
-            if (!child.isVisible()) {
-                continue;
-            }
-            count++;
-        }
-        return count;
-    }
+    void compileRegex(final StringBuilder builder);
 
-    default List<? extends Node> getVisibleChildren() {
-        return getChildren().stream().filter(Node::isVisible).toList();
+    default boolean isContainer() {
+        return false;
     }
 
     default boolean isNamed() {

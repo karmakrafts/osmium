@@ -72,7 +72,12 @@ public final class LexerElementParser extends ParseAdapter {
         final var altContexts = context.lexerAlt();
         final var elements = new ArrayList<Node>();
         for (final var altContext : altContexts) {
-            elements.add(new SequenceNode(parseAll(parentDir, altContext.lexerElements())));
+            final var alts = parseAll(parentDir, altContext.lexerElements());
+            if (alts.size() == 1) {
+                elements.add(alts.getFirst());
+                continue;
+            }
+            elements.add(new SequenceNode(alts));
         }
         node = new AltListNode(elements);
     }
@@ -84,14 +89,9 @@ public final class LexerElementParser extends ParseAdapter {
         }
         final var atomContext = context.lexerAtom();
         if (atomContext != null) {
-            final var mod = parseUnaryOp(context.ebnfSuffix());
-            // Any match=
+            // Any match
             if (atomContext.DOT() != null) {
                 node = new AnyMatchNode();
-                if (mod != null) {
-                    node = new UnaryOpNode(mod, node);
-                }
-                return;
             }
             // Ranges
             final var rangeContext = atomContext.characterRange();
@@ -100,10 +100,6 @@ public final class LexerElementParser extends ParseAdapter {
                 final var start = literals.getFirst().getText().charAt(0);
                 final var end = literals.getLast().getText().charAt(0);
                 node = new RangeNode(start, end);
-                if (mod != null) {
-                    node = new UnaryOpNode(mod, node);
-                }
-                return;
             }
             // Literal text and references
             final var terminalContext = atomContext.terminalDef();
@@ -112,31 +108,32 @@ public final class LexerElementParser extends ParseAdapter {
                 if (literal != null) {
                     final var rawText = literal.getText();
                     node = new TextNode(rawText.substring(1, rawText.length() - 1));
-                    if (mod != null) {
-                        node = new UnaryOpNode(mod, node);
-                    }
+                }
+                else {
+                    node = new ReferenceNode(terminalContext.TOKEN_REF().getText());
+                }
+            }
+            if (node == null) {
+                // Handle bracket blocks
+                final var text = atomContext.getText();
+                if (text.startsWith("~")) {
+                    return; // TODO: handle match-until
+                }
+                if (!(text.startsWith("[")) || !text.endsWith("]")) {
+                    System.err.println("Could not parse character range");
                     return;
                 }
-                node = new ReferenceNode(terminalContext.TOKEN_REF().getText());
-                if (mod != null) {
-                    node = new UnaryOpNode(mod, node);
-                }
-                return;
+                final var pattern = text.substring(1, text.length() - 1); // Get rid of brackets
+                node = new RawRangeNode(pattern);
             }
-            // Handle bracket blocks
-            final var text = atomContext.getText();
-            if (text.startsWith("~")) {
-                return; // TODO: handle match-until
-            }
-            if (!(text.startsWith("[")) || !text.endsWith("]")) {
-                System.err.println("Could not parse character range");
-                return;
-            }
-            final var pattern = text.substring(1, text.length() - 1); // Get rid of brackets
-            node = new RawRangeNode(pattern);
-            if (mod != null) {
-                node = new UnaryOpNode(mod, node);
-            }
+        }
+        if (node == null) {
+            return; // TODO: handle error
+        }
+        final var suffixContext = context.ebnfSuffix();
+        if (suffixContext != null) {
+            final var op = parseUnaryOp(suffixContext);
+            node = new UnaryOpNode(op, node);
         }
     }
 }

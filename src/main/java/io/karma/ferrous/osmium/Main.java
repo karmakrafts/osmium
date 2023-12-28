@@ -81,7 +81,7 @@ public final class Main {
         }
         catch (Throwable error) {
             System.err.println("Oops, that didn't quite work. Try running with -? to get some help");
-            System.err.println(STR."\t\{error.getMessage()}");
+            System.err.println(STR."\t\{error.fillInStackTrace()}");
             System.exit(1);
         }
     }

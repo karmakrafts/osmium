@@ -17,29 +17,27 @@ package io.karma.ferrous.osmium.grammar.node;
 
 import org.apiguardian.api.API;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Alexander Hinze
- * @since 25/12/2023
+ * @since 27/12/2023
  */
 @API(status = API.Status.INTERNAL)
-public final class RawRangeNode extends AbstractNode {
-    private final String pattern;
+public abstract class AbstractNode implements Node {
+    protected final ArrayList<ModeAction> modeActions = new ArrayList<>();
 
-    public RawRangeNode(final String pattern) {
-        this.pattern = pattern;
+    public void addModeActions(final List<ModeAction> actions) {
+        modeActions.addAll(actions);
     }
 
-    public String getPattern() {
-        return pattern;
-    }
-
-    @Override
-    public void compileRegex(final StringBuilder builder) {
-        builder.append(STR."[\{pattern}]");
+    public void addModeAction(final ModeAction action) {
+        modeActions.add(action);
     }
 
     @Override
-    public NodeType getType() {
-        return NodeType.RAW_RANGE;
+    public List<ModeAction> getModeActions() {
+        return modeActions;
     }
 }
