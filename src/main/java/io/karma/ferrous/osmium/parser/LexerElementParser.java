@@ -65,24 +65,6 @@ public final class LexerElementParser extends ParseAdapter {
         // @formatter:on
     }
 
-    @Override
-    public void enterLexerAltList(final LexerAltListContext context) {
-        if (node != null) {
-            return;
-        }
-        final var altContexts = context.lexerAlt();
-        final var elements = new ArrayList<Node>();
-        for (final var altContext : altContexts) {
-            final var alts = parseAll(parentDir, altContext.lexerElements());
-            if (alts.size() == 1) {
-                elements.add(alts.getFirst());
-                continue;
-            }
-            elements.add(new SequenceNode(alts));
-        }
-        node = new AltListNode(elements);
-    }
-
     private static @Nullable Node parseSetElement(final @Nullable ANTLRv4Parser.SetElementContext context) {
         if (context == null) {
             return null;
@@ -104,10 +86,89 @@ public final class LexerElementParser extends ParseAdapter {
             return null;
         }
         final var text = context.getText();
-        if (!(text.startsWith("[")) || !text.endsWith("]")) {
+        if (!text.startsWith("[") || !text.contains("]")) {
             return null;
         }
-        return new RawRangeNode(text.substring(1, text.length() - 1));
+        return new RawRangeNode(text.substring(1, text.lastIndexOf(']')));
+    }
+
+    private static @Nullable Node parseAtom(final @Nullable ANTLRv4Parser.LexerAtomContext context) {
+        if (context == null) {
+            return null;
+        }
+        // Any match
+        if (context.DOT() != null) {
+            return new AnyMatchNode();
+        }
+        // Ranges
+        final var rangeContext = context.characterRange();
+        if (rangeContext != null) {
+            final var literals = rangeContext.STRING_LITERAL();
+            final var start = literals.getFirst().getText().charAt(0);
+            final var end = literals.getLast().getText().charAt(0);
+            return new RangeNode(start, end);
+        }
+        // Literal text and references
+        final var terminalContext = context.terminalDef();
+        if (terminalContext != null) {
+            final var literal = terminalContext.STRING_LITERAL();
+            if (literal != null) {
+                final var rawText = literal.getText();
+                return new TextNode(rawText.substring(1, rawText.length() - 1));
+            }
+            else {
+                return new ReferenceNode(terminalContext.TOKEN_REF().getText());
+            }
+        }
+        final var notSetContext = context.notSet();
+        if (notSetContext != null) {
+            final var blockSetContext = notSetContext.blockSet();
+            if (blockSetContext != null) {
+                final var elements = new ArrayList<Node>();
+                final var elementContexts = blockSetContext.setElement();
+                for (final var elementContext : elementContexts) {
+                    final var element = parseSetElement(elementContext);
+                    if (element == null) {
+                        System.err.println(STR."Could not parse not-set element: \{elementContext.getText()}");
+                        continue;
+                    }
+                    elements.add(element);
+                }
+                return new NotSetNode(elements);
+            }
+            else {
+                final var elementContext = notSetContext.setElement();
+                if (elementContext == null) {
+                    System.err.println(STR."Could not parse not-set: \{context.getText()}");
+                    return null;
+                }
+                final var element = parseSetElement(elementContext);
+                if (element == null) {
+                    System.err.println(STR."Could not parse not-set element: \{elementContext.getText()}");
+                    return null;
+                }
+                return new NotSetNode(Collections.singletonList(element));
+            }
+        }
+        return parseRawRange(context);
+    }
+
+    @Override
+    public void enterLexerAltList(final LexerAltListContext context) {
+        if (node != null) {
+            return;
+        }
+        final var altContexts = context.lexerAlt();
+        final var elements = new ArrayList<Node>();
+        for (final var altContext : altContexts) {
+            final var alts = parseAll(parentDir, altContext.lexerElements());
+            if (alts.size() == 1) {
+                elements.add(alts.getFirst());
+                continue;
+            }
+            elements.add(new SequenceNode(alts));
+        }
+        node = new AltListNode(elements);
     }
 
     @Override
@@ -115,70 +176,17 @@ public final class LexerElementParser extends ParseAdapter {
         if (node != null) {
             return;
         }
+        final var blockContext = context.lexerBlock();
+        if (blockContext != null) {
+            node = parse(parentDir, blockContext);
+        }
         final var atomContext = context.lexerAtom();
         if (atomContext != null) {
-            // Any match
-            if (atomContext.DOT() != null) {
-                node = new AnyMatchNode();
-            }
-            // Ranges
-            final var rangeContext = atomContext.characterRange();
-            if (rangeContext != null) {
-                final var literals = rangeContext.STRING_LITERAL();
-                final var start = literals.getFirst().getText().charAt(0);
-                final var end = literals.getLast().getText().charAt(0);
-                node = new RangeNode(start, end);
-            }
-            // Literal text and references
-            final var terminalContext = atomContext.terminalDef();
-            if (terminalContext != null) {
-                final var literal = terminalContext.STRING_LITERAL();
-                if (literal != null) {
-                    final var rawText = literal.getText();
-                    node = new TextNode(rawText.substring(1, rawText.length() - 1));
-                }
-                else {
-                    node = new ReferenceNode(terminalContext.TOKEN_REF().getText());
-                }
-            }
-            final var notSetContext = atomContext.notSet();
-            if (notSetContext != null) {
-                final var blockSetContext = notSetContext.blockSet();
-                if (blockSetContext != null) {
-                    final var elements = new ArrayList<Node>();
-                    final var elementContexts = blockSetContext.setElement();
-                    for (final var elementContext : elementContexts) {
-                        final var element = parseSetElement(elementContext);
-                        if (element == null) {
-                            System.err.println(STR."Could not parse not-set element: \{elementContext.getText()}");
-                            continue;
-                        }
-                        elements.add(element);
-                    }
-                    node = new NotSetNode(elements);
-                }
-                else {
-                    final var elementContext = notSetContext.setElement();
-                    if (elementContext == null) {
-                        System.err.println(STR."Could not parse not-set: \{context.getText()}");
-                        return;
-                    }
-                    final var element = parseSetElement(elementContext);
-                    if (element == null) {
-                        System.err.println(STR."Could not parse not-set element: \{elementContext.getText()}");
-                        return;
-                    }
-                    node = new NotSetNode(Collections.singletonList(element));
-                }
-            }
-            if (node == null) {
-                // Handle bracket blocks
-                node = parseRawRange(context);
-            }
+            node = parseAtom(atomContext);
         }
         if (node == null) {
             System.err.println(STR."Could not parse node: \{context.getText()}");
-            return; // TODO: handle error
+            return;
         }
         final var suffixContext = context.ebnfSuffix();
         if (suffixContext != null) {

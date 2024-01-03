@@ -25,7 +25,7 @@ import org.apiguardian.api.API;
 public final class AnyMatchNode extends AbstractNode {
     @Override
     public void compileRegex(final StringBuilder builder) {
-        builder.append('.');
+        builder.append("([\\n\\t\\r\\s]|.)");
     }
 
     @Override

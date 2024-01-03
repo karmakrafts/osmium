@@ -68,7 +68,7 @@ public interface ContainerNode extends Node {
             }
             setChild(i, refNode);
         }
-        
+
     }
 
     Node removeChild(final int index);
