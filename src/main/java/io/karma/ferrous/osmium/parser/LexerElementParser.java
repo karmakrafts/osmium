@@ -15,6 +15,7 @@
 
 package io.karma.ferrous.osmium.parser;
 
+import io.karma.ferrous.antlr.ANTLRv4Parser;
 import io.karma.ferrous.antlr.ANTLRv4Parser.LexerAltListContext;
 import io.karma.ferrous.antlr.ANTLRv4Parser.LexerElementContext;
 import io.karma.ferrous.osmium.grammar.node.*;
@@ -82,6 +83,33 @@ public final class LexerElementParser extends ParseAdapter {
         node = new AltListNode(elements);
     }
 
+    private static @Nullable Node parseSetElement(final @Nullable ANTLRv4Parser.SetElementContext context) {
+        if (context == null) {
+            return null;
+        }
+        final var refContext = context.TOKEN_REF();
+        if (refContext != null) {
+            return new ReferenceNode(refContext.getText());
+        }
+        final var literalContext = context.STRING_LITERAL();
+        if (literalContext != null) {
+            final var text = literalContext.getText();
+            return new TextNode(text.substring(1, text.length() - 1));
+        }
+        return parseRawRange(context);
+    }
+
+    private static @Nullable Node parseRawRange(final @Nullable ParserRuleContext context) {
+        if (context == null) {
+            return null;
+        }
+        final var text = context.getText();
+        if (!(text.startsWith("[")) || !text.endsWith("]")) {
+            return null;
+        }
+        return new RawRangeNode(text.substring(1, text.length() - 1));
+    }
+
     @Override
     public void enterLexerElement(final LexerElementContext context) {
         if (node != null) {
@@ -113,21 +141,43 @@ public final class LexerElementParser extends ParseAdapter {
                     node = new ReferenceNode(terminalContext.TOKEN_REF().getText());
                 }
             }
+            final var notSetContext = atomContext.notSet();
+            if (notSetContext != null) {
+                final var blockSetContext = notSetContext.blockSet();
+                if (blockSetContext != null) {
+                    final var elements = new ArrayList<Node>();
+                    final var elementContexts = blockSetContext.setElement();
+                    for (final var elementContext : elementContexts) {
+                        final var element = parseSetElement(elementContext);
+                        if (element == null) {
+                            System.err.println(STR."Could not parse not-set element: \{elementContext.getText()}");
+                            continue;
+                        }
+                        elements.add(element);
+                    }
+                    node = new NotSetNode(elements);
+                }
+                else {
+                    final var elementContext = notSetContext.setElement();
+                    if (elementContext == null) {
+                        System.err.println(STR."Could not parse not-set: \{context.getText()}");
+                        return;
+                    }
+                    final var element = parseSetElement(elementContext);
+                    if (element == null) {
+                        System.err.println(STR."Could not parse not-set element: \{elementContext.getText()}");
+                        return;
+                    }
+                    node = new NotSetNode(Collections.singletonList(element));
+                }
+            }
             if (node == null) {
                 // Handle bracket blocks
-                final var text = atomContext.getText();
-                if (text.startsWith("~")) {
-                    return; // TODO: handle match-until
-                }
-                if (!(text.startsWith("[")) || !text.endsWith("]")) {
-                    System.err.println("Could not parse character range");
-                    return;
-                }
-                final var pattern = text.substring(1, text.length() - 1); // Get rid of brackets
-                node = new RawRangeNode(pattern);
+                node = parseRawRange(context);
             }
         }
         if (node == null) {
+            System.err.println(STR."Could not parse node: \{context.getText()}");
             return; // TODO: handle error
         }
         final var suffixContext = context.ebnfSuffix();

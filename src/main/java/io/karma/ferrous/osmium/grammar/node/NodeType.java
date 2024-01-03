@@ -36,7 +36,8 @@ public enum NodeType {
     REFERENCE,
     ANY_MATCH,
     SELF_REFERENCE,
-    SEQUENCE;
+    SEQUENCE,
+    NOT_SET;
     // @formatter:on
 
     public boolean isRange() {
