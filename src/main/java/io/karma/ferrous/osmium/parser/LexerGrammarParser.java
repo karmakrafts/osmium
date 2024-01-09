@@ -70,6 +70,10 @@ public final class LexerGrammarParser extends ParseAdapter {
     @Override
     public void enterLexerRuleSpec(final LexerRuleSpecContext context) {
         final var name = context.TOKEN_REF().getText();
+        if (grammar.hasNode(name)) {
+            System.err.println(STR."Found duplicated rule '\{name}' in lexer grammar");
+            return;
+        }
         final var altListContext = context.lexerRuleBlock().lexerAltList();
         final var altList = LexerElementParser.parse(parentDir, altListContext);
         if (context.FRAGMENT() != null) { // We are parsing a fragment

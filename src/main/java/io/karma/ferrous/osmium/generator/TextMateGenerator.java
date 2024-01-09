@@ -24,8 +24,6 @@ import org.apiguardian.api.API;
 
 import java.nio.channels.WritableByteChannel;
 import java.util.EnumMap;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Alexander Hinze
@@ -79,14 +77,8 @@ public final class TextMateGenerator implements Generator {
         if (!(grammar instanceof ParserGrammar parserGrammar)) {
             return;
         }
-        final List<NamedNode> nodes = Objects.requireNonNull(parserGrammar.getLexerGrammar()).getNodes();
-        if (nodes.isEmpty()) {
-            return;
-        }
-        for (final NamedNode node : nodes) {
-            final var builder = new StringBuilder();
-            node.compileRegex(builder);
-            System.out.println(STR."\{node.getName()}: \{builder}");
+        for (final NamedNode node : parserGrammar.getNodes()) {
+
         }
     }
 }

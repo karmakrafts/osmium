@@ -33,7 +33,8 @@ public enum NodeType {
     UNARY_OP,
     RANGE,
     RAW_RANGE,
-    REFERENCE,
+    TOKEN_REF,
+    RULE_REF,
     ANY_MATCH,
     SELF_REFERENCE,
     SEQUENCE,
@@ -42,5 +43,9 @@ public enum NodeType {
 
     public boolean isRange() {
         return this == RANGE || this == RAW_RANGE;
+    }
+
+    public boolean isReference() {
+        return this == TOKEN_REF || this == RULE_REF;
     }
 }

@@ -39,6 +39,13 @@ public abstract class AbstractGrammar implements Grammar {
         this.name = name;
     }
 
+    public boolean hasNode(final @Nullable String name) {
+        if (name == null) {
+            return false;
+        }
+        return nodes.containsKey(name);
+    }
+
     public void addNodes(final List<? extends NamedNode> nodes) {
         for (final var node : nodes) {
             this.nodes.put(node.getName(), node);

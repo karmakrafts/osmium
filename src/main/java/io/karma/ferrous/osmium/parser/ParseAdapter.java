@@ -19,7 +19,7 @@ import io.karma.ferrous.antlr.ANTLRv4Parser;
 import io.karma.ferrous.antlr.ANTLRv4ParserListener;
 import io.karma.ferrous.osmium.Transpiler;
 import io.karma.ferrous.osmium.grammar.LexerGrammar;
-import io.karma.ferrous.osmium.grammar.node.UnaryOpNode;
+import io.karma.ferrous.osmium.grammar.node.*;
 import io.karma.kommons.function.Functions;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -29,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 /**
  * @author Alexander Hinze
@@ -53,6 +54,50 @@ public abstract class ParseAdapter implements ANTLRv4ParserListener {
             return UnaryOpNode.Op.ONE_OR_MORE;
         }
         return UnaryOpNode.Op.ZERO_OR_ONE;
+    }
+
+    protected static @Nullable Node parseSetElement(final @Nullable ANTLRv4Parser.SetElementContext context) {
+        if (context == null) {
+            return null;
+        }
+        final var refContext = context.TOKEN_REF();
+        if (refContext != null) {
+            return new ReferenceNode(refContext.getText(), false);
+        }
+        final var literalContext = context.STRING_LITERAL();
+        if (literalContext != null) {
+            final var text = literalContext.getText();
+            return new TextNode(text.substring(1, text.length() - 1));
+        }
+        return parseRawRange(context);
+    }
+
+    protected static @Nullable Node parseRawRange(final @Nullable ParserRuleContext context) {
+        if (context == null) {
+            return null;
+        }
+        final var text = context.getText();
+        if (!text.startsWith("[") || !text.contains("]")) {
+            return null;
+        }
+        return new RawRangeNode(text.substring(1, text.lastIndexOf(']')));
+    }
+
+    protected static @Nullable Node parseBlockSet(final @Nullable ANTLRv4Parser.BlockSetContext context) {
+        if (context == null) {
+            return null;
+        }
+        final var elements = new ArrayList<Node>();
+        final var elementContexts = context.setElement();
+        for (final var elementContext : elementContexts) {
+            final var element = parseSetElement(elementContext);
+            if (element == null) {
+                System.err.println(STR."Could not parse not-set element: \{elementContext.getText()}");
+                continue;
+            }
+            elements.add(element);
+        }
+        return new NotSetNode(elements);
     }
 
     protected @Nullable LexerGrammar loadLexerGrammar(final String name) {

@@ -24,9 +24,11 @@ import org.apiguardian.api.API;
 @API(status = API.Status.INTERNAL)
 public final class ReferenceNode extends AbstractNode implements NamedNode {
     private final String name;
+    private final boolean isRuleRef;
 
-    public ReferenceNode(final String name) {
+    public ReferenceNode(final String name, final boolean isRuleRef) {
         this.name = name;
+        this.isRuleRef = isRuleRef;
     }
 
     @Override
@@ -40,6 +42,6 @@ public final class ReferenceNode extends AbstractNode implements NamedNode {
 
     @Override
     public NodeType getType() {
-        return NodeType.REFERENCE;
+        return isRuleRef ? NodeType.RULE_REF : NodeType.TOKEN_REF;
     }
 }

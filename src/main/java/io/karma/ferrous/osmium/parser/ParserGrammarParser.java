@@ -15,10 +15,12 @@
 
 package io.karma.ferrous.osmium.parser;
 
+import io.karma.ferrous.antlr.ANTLRv4Parser;
 import io.karma.ferrous.antlr.ANTLRv4Parser.GrammarDeclContext;
 import io.karma.ferrous.antlr.ANTLRv4Parser.OptionContext;
 import io.karma.ferrous.osmium.grammar.Grammar;
 import io.karma.ferrous.osmium.grammar.ParserGrammar;
+import io.karma.ferrous.osmium.grammar.node.ParserRuleNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apiguardian.api.API;
@@ -53,6 +55,23 @@ public final class ParserGrammarParser extends ParseAdapter {
             throw new IllegalStateException("Grammar is not a parser grammar");
         }
         grammar = new ParserGrammar(context.identifier().getText());
+    }
+
+    @Override
+    public void enterParserRuleSpec(final ANTLRv4Parser.ParserRuleSpecContext context) {
+        final var name = context.RULE_REF().getText();
+        if (grammar.hasNode(name)) {
+            System.err.println(STR."Found duplicated node '\{name}' in parser grammar");
+            return;
+        }
+        final var block = ParserElementParser.parse(parentDir, context.ruleBlock());
+        if (block == null) {
+            System.err.println(STR."Could not parse rule block: \{context.getText()}");
+            return;
+        }
+        final var rule = new ParserRuleNode(name);
+        rule.addChild(block);
+        grammar.addNode(rule);
     }
 
     @Override

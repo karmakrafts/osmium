@@ -15,6 +15,8 @@
 
 package io.karma.ferrous.osmium.grammar.node;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +45,7 @@ public interface ContainerNode extends Node {
         }
     }
 
-    default void resolve(final NamedNode rootNode, final Map<String, NamedNode> nodes) {
+    default void resolve(final @Nullable NamedNode rootNode, final Map<String, NamedNode> nodes) {
         final var children = getChildren();
         for (final var child : children) {
             if (!(child instanceof ContainerNode container)) {
@@ -54,7 +56,7 @@ public interface ContainerNode extends Node {
         final var count = children.size();
         for (var i = 0; i < count; i++) {
             final var child = children.get(i);
-            if (child.getType() != NodeType.REFERENCE) {
+            if (!child.getType().isReference()) {
                 continue;
             }
             final var refName = ((ReferenceNode) child).getName();
@@ -68,7 +70,6 @@ public interface ContainerNode extends Node {
             }
             setChild(i, refNode);
         }
-
     }
 
     Node removeChild(final int index);
